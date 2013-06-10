@@ -1,7 +1,40 @@
 # dmenu - dynamic menu
 # See LICENSE file for copyright and license details.
 
-include config.mk
+CONFIGMK = nonexistant.mk
+
+ifeq ($(OS),Windows_NT)
+    #CCFLAGS += -D WIN32
+    ifeq ($(PROCESSOR_ARCHITECTURE),AMD64)
+        #CCFLAGS += -D AMD64
+    endif
+    ifeq ($(PROCESSOR_ARCHITECTURE),x86)
+        #CCFLAGS += -D IA32
+    endif
+else
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+        #CCFLAGS += -D LINUX
+    endif
+    ifeq ($(UNAME_S),FreeBSD)
+        CONFIGMK = config.mk.freebsd
+    endif
+    ifeq ($(UNAME_S),Darwin)
+        CONFIGMK = config.mk.darwin
+    endif
+    UNAME_P := $(shell uname -p)
+    ifeq ($(UNAME_P),x86_64)
+        #CCFLAGS += -D AMD64
+    endif
+    ifneq ($(filter %86,$(UNAME_P)),)
+        #CCFLAGS += -D IA32
+    endif
+    ifneq ($(filter arm%,$(UNAME_P)),)
+        #CCFLAGS += -D ARM
+    endif
+endif
+
+include ${CONFIGMK}
 
 SRC = dmenu.c draw.c stest.c
 OBJ = ${SRC:.c=.o}
@@ -16,13 +49,13 @@ options:
 
 .c.o:
 	@echo CC -c $<
-	@${CC} -c $< ${CFLAGS}
+	@${CC} -c ${CFLAGS} $<
 
 config.h:
 	@echo creating $@ from config.def.h
 	@cp config.def.h $@
 
-${OBJ}: config.h config.mk draw.h
+${OBJ}: config.h ${CONFIGMK} draw.h
 
 dmenu: dmenu.o draw.o
 	@echo CC -o $@
@@ -39,7 +72,7 @@ clean:
 dist: clean
 	@echo creating dist tarball
 	@mkdir -p dmenu-${VERSION}
-	@cp LICENSE Makefile README config.mk dmenu.1 draw.h dmenu_path dmenu_run stest.1 ${SRC} dmenu-${VERSION}
+	@cp LICENSE Makefile README ${CONFIGMK} dmenu.1 draw.h dmenu_path dmenu_run stest.1 ${SRC} dmenu-${VERSION}
 	@tar -cf dmenu-${VERSION}.tar dmenu-${VERSION}
 	@gzip dmenu-${VERSION}.tar
 	@rm -rf dmenu-${VERSION}
