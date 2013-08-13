@@ -86,6 +86,7 @@ install: all
 	@install -m 0755 dmenu_run  ${DESTDIR}${PREFIX}/bin/
 	@install -m 0755 stest      ${DESTDIR}${PREFIX}/bin/
 	@echo installing manual pages to ${DESTDIR}${MANPREFIX}/man1
+	@install -d -m 0755 ${DESTDIR}${MANPREFIX}
 	@install -d -m 0755 ${DESTDIR}${MANPREFIX}/man1
 	@sed "s/VERSION/${VERSION}/g" < dmenu.1 > dmenu.1.s
 	@sed "s/VERSION/${VERSION}/g" < stest.1 > stest.1.s
